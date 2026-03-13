@@ -77,7 +77,7 @@ pip install -r requirements.txt
 
 
 
-📱 User Interface Guide
+## 📱 User Interface Guide
 
 Home Screen
 * Welcome Message: Personalized greeting for the developer.
@@ -93,7 +93,7 @@ Settings Screen
 
 
 
-📦 Mobile Deployment (APK/IPA)
+## 📦 Mobile Deployment (APK/IPA)
 To convert this Python code into a native mobile application, we use Buildozer.
 
 Using Google Colab (Recommended)
@@ -104,7 +104,7 @@ Using Google Colab (Recommended)
 
 
 
-⚙️ Environment Configuration
+## ⚙️ Environment Configuration
 The application requires the following environment variables if deployed to a production server:
 * DEBUG_MODE: Set to True for development.
 * APP_VERSION: Current build version (e.g., 1.0.0).
@@ -112,7 +112,7 @@ The application requires the following environment variables if deployed to a pr
 
 
 
-🔧 Troubleshooting
+## 🔧 Troubleshooting
 Issue: Application crashes on startup.
 Solution: Ensure that all dependencies in requirements.txt are installed. Run pip check to verify.
 Issue: Screen is black in Kivy mode.
@@ -120,7 +120,7 @@ Solution: Update your Graphics Card drivers or ensure OpenGL 2.0+ is supported.
 
 
 
-🗺 Future Roadmap
+## 🗺 Future Roadmap
 * Integration with SQLite for permanent data storage.
 * Push Notification system via Firebase.
 * Biometric Authentication (Fingerprint/FaceID).
