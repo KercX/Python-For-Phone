@@ -1,100 +1,129 @@
-import sys
+import flet as ft
+import datetime
 
-# --- CORE LOGIC FOR FLET INTERFACE ---
-def run_modern_ui():
-    import flet as ft
+def main(page: ft.Page):
+    page.title = "Python for Phone - Enterprise Edition"
+    page.theme_mode = ft.ThemeMode.DARK
+    page.padding = 0
+    page.window_width = 400
+    page.window_height = 800
+    page.scroll = "hidden"
+
+    # --- 1. DATA STORAGE (Simulated Database) ---
+    app_data = {
+        "user": "Developer",
+        "tasks": [],
+        "logs": []
+    }
+
+    # --- 2. APP LOGIC ---
+    def add_log(message):
+        timestamp = datetime.datetime.now().strftime("%H:%M:%S")
+        app_data["logs"].append(f"[{timestamp}] {message}")
+
+    def change_tab(e):
+        index = e.control.selected_index
+        main_content.controls.clear()
+        
+        if index == 0: # Home Tab
+            main_content.controls.append(home_view())
+        elif index == 1: # Dashboard Tab
+            main_content.controls.append(dashboard_view())
+        elif index == 2: # Settings Tab
+            main_content.controls.append(settings_view())
+            
+        page.update()
+
+    # --- 3. UI COMPONENTS (VIEWS) ---
     
-    def main(page: ft.Page):
-        page.title = "Python for Phone"
-        page.theme_mode = ft.ThemeMode.DARK
-        page.padding = 30
-        page.window_width = 400
-        page.window_height = 800
+    def home_view():
+        return ft.Container(
+            content=ft.Column([
+                ft.Text("Welcome back,", size=20, color="grey"),
+                ft.Text(f"{app_data['user']}! 👋", size=45, weight="bold"),
+                ft.Divider(height=40, color="transparent"),
+                ft.Card(
+                    content=ft.Container(
+                        content=ft.Column([
+                            ft.ListTile(
+                                leading=ft.Icon(ft.icons.SHIELD_MOON, color="blue"),
+                                title=ft.Text("System Security"),
+                                subtitle=ft.Text("Your connection is encrypted."),
+                            ),
+                            ft.Row([ft.TextButton("Details"), ft.TextButton("Optimize")], alignment="end")
+                        ]), padding=10
+                    )
+                ),
+                ft.Text("Recent Activity", size=25, weight="w600"),
+                ft.ListView(expand=True, spacing=10, controls=[
+                    ft.Text(log, size=14, color="grey") for log in reversed(app_data["logs"][-5:])
+                ])
+            ], scroll="adaptive"),
+            padding=30, expand=True
+        )
 
-        # UI Components
-        header = ft.Text("Control Panel", size=40, weight="bold", color="blue")
-        status_icon = ft.Icon(name=ft.icons.CELLULAR_ALT, color="green")
+    def dashboard_view():
+        task_input = ft.TextField(label="New Task Name", border_radius=15)
         
-        user_input = ft.TextField(
-            label="Command Center", 
-            hint_text="Enter instructions...",
-            border_radius=15,
-            prefix_icon=ft.icons.TERMINAL
-        )
-
-        def on_action(e):
-            if user_input.value:
-                output_text.value = f"Processing: {user_input.value}..."
-                progress_bar.visible = True
-                page.update()
-                # Simulating work
-                output_text.value = f"Done! Project '{user_input.value}' is active."
-                progress_bar.visible = False
+        def on_add(e):
+            if task_input.value:
+                app_data["tasks"].append(task_input.value)
+                add_log(f"Added task: {task_input.value}")
+                task_input.value = ""
+                main_content.controls.clear()
+                main_content.controls.append(dashboard_view())
                 page.update()
 
-        action_btn = ft.FloatingActionButton(
-            icon=ft.icons.PLAY_ARROW, 
-            on_click=on_action,
-            bgcolor="blue"
-        )
-        
-        output_text = ft.Text("System ready", size=16, italic=True)
-        progress_bar = ft.ProgressBar(width=400, color="blue", visible=False)
-
-        # Dashboard View
-        page.add(
-            ft.Row([header, status_icon], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
-            ft.Divider(height=30, color="transparent"),
-            user_input,
-            ft.Row([action_btn], alignment=ft.MainAxisAlignment.END),
-            ft.Divider(height=20),
-            output_text,
-            progress_bar,
-            ft.Spacer(),
-            ft.Text("Powered by Python Engine", size=12, color="grey")
+        return ft.Container(
+            content=ft.Column([
+                ft.Text("Project Manager", size=35, weight="bold"),
+                ft.Row([task_input, ft.IconButton(ft.icons.ADD_CIRCLE, on_click=on_add, icon_size=40, icon_color="blue")]),
+                ft.Divider(),
+                ft.Column([ft.Checkbox(label=t, value=False) for t in app_data["tasks"]], scroll="adaptive")
+            ]), padding=30, expand=True
         )
 
-    ft.app(target=main)
+    def settings_view():
+        return ft.Container(
+            content=ft.Column([
+                ft.Text("Settings", size=35, weight="bold"),
+                ft.Switch(label="Push Notifications", value=True),
+                ft.Switch(label="Dark Mode", value=True, on_change=lambda _: setattr(page, "theme_mode", "light" if page.theme_mode == "dark" else "dark") or page.update()),
+                ft.Dropdown(
+                    label="Language",
+                    options=[ft.dropdown.Option("English"), ft.dropdown.Option("Ukrainian")],
+                    value="English"
+                ),
+                ft.ElevatedButton("Logout", color="red", icon=ft.icons.LOGOUT)
+            ]), padding=30, expand=True
+        )
 
-# --- CORE LOGIC FOR KIVY INTERFACE ---
-def run_native_ui():
-    from kivy.app import App
-    from kivy.uix.boxlayout import BoxLayout
-    from kivy.uix.label import Label
-    from kivy.uix.button import Button
-    from kivy.core.window import Window
+    # --- 4. NAVIGATION & LAYOUT ---
+    main_content = ft.Column([home_view()], expand=True)
+    
+    page.navigation_bar = ft.NavigationBar(
+        destinations=[
+            ft.NavigationDestination(icon=ft.icons.HOME_OUTLINED, selected_icon=ft.icons.HOME, label="Home"),
+            ft.NavigationDestination(icon=ft.icons.DASHBOARD_OUTLINED, selected_icon=ft.icons.DASHBOARD, label="Manager"),
+            ft.NavigationDestination(icon=ft.icons.SETTINGS_OUTLINED, selected_icon=ft.icons.SETTINGS, label="Settings"),
+        ],
+        on_change=change_tab
+    )
 
-    class MobileApp(App):
-        def build(self):
-            Window.clearcolor = (0.05, 0.05, 0.05, 1)
-            layout = BoxLayout(orientation='vertical', padding=40, spacing=20)
-            
-            layout.add_widget(Label(
-                text="System Interface", 
-                font_size='35sp', 
-                bold=True, 
-                color=(0, 0.5, 1, 1)
-            ))
-            
-            btn = Button(
-                text="LAUNCH CORE", 
-                size_hint=(1, 0.2),
-                background_normal='',
-                background_color=(0, 0.4, 0.8, 1)
-            )
-            
-            layout.add_widget(btn)
-            layout.add_widget(Label(text="Native Kernel Active", color=(0.5, 0.5, 0.5, 1)))
-            return layout
+    # Initial Log
+    add_log("Application started successfully")
+    
+    page.add(
+        ft.Container(
+            content=main_content,
+            gradient=ft.LinearGradient(
+                begin=ft.alignment.top_center,
+                end=ft.alignment.bottom_center,
+                colors=["#1a1a2e", "#16213e"]
+            ),
+            expand=True
+        )
+    )
 
-    MobileApp().run()
-
-# --- SELECTOR ENGINE ---
 if __name__ == "__main__":
-    print("Initializing Python for Phone...")
-    try:
-        import flet
-        run_modern_ui()
-    except ImportError:
-        print("Flet not found. Falling back to Kivy native engine...")
-        run_native_ui()
+    ft.app(target=main)
