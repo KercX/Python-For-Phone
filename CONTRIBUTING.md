@@ -1,9 +1,6 @@
 # Contributing to Python for Phone
 
-First off, thank you for considering contributing! 
-
-## Code of Conduct
-By participating in this project, you agree to maintain a professional and respectful environment.
+First off, thank you for considering 
 
 ## How Can I Contribute?
 - **Reporting Bugs:** Create an Issue with a detailed description.
